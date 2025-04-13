@@ -1,0 +1,2 @@
+test_loss,test_acc,test_f1,test_precision,test_roc_auc,test_pr_auc
+0.4684738516807556,0.8994327187538147,0.0,0.0,0.613311767578125,

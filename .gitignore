@@ -3,6 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# folder
+/sourcescripts/storage/external/joern-cli
+/sourcescripts/uutils/__pycache__
+/sourcescripts/storage/processed
+/sourcescripts/storage/cache
+/sourcescripts/storage/output
+/sourcescripts/workspace
+sourcescripts/lightning_logs
 # C extensions
 *.so
 
