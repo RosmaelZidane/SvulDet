@@ -13,6 +13,7 @@ import json
 import os
 import sys
 
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import uutils.__utils__ as utls
@@ -443,13 +444,12 @@ def get_node_edges(filepath, verbose=0):
             nodes = pd.concat([nodes, nodes1], ignore_index=True)
     return nodes, edges
 
-
 def feature_extraction(_id, graph_type="cfgcdg", return_nodes=False):
     """Extract graph feature (basic).
 
-    _id = svddc.datasetDataset.itempath(177775)
-    _id = svddc.datasetDataset.itempath(180189)
-    _id = svddc.datasetDataset.itempath(178958)
+    _id = datasetDataset.itempath(177775)
+    _id = datasetDataset.itempath(180189)
+    _id = datasetDataset.itempath(178958)
 
     return_nodes arg is used to get the node information (for empirical evaluation).
     """

@@ -22,7 +22,7 @@ class datasetDatasetNLP:
 
         if partition in ["train", "val"]:
             vul = self.df[self.df.vul == 1]
-            nonvul = self.df[self.df.vul == 0].sample(len(vul), random_state=0)
+            nonvul = self.df[self.df.vul == 0]#.sample(len(vul), random_state=0)
             self.df = pd.concat([vul, nonvul])
 
         tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         accelerator="auto",
         devices="auto",
-        max_epochs=2, # 10 # the good is 5
+        max_epochs=5, # 10 # the good is 5
         callbacks=[checkpoint_callback]
     )
     

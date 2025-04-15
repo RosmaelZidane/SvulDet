@@ -24,7 +24,7 @@ class datasetDatasetWord2Vec:
 
         if partition in ["train", "val"]:
             vul = self.df[self.df.vul == 1]
-            nonvul = self.df[self.df.vul == 0].sample(len(vul), random_state=0)
+            nonvul = self.df[self.df.vul == 0]#.sample(len(vul), random_state=0)
             self.df = pd.concat([vul, nonvul])
 
         self.sentences = [sentence.split() for sentence in self.df.before.tolist()]
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         callbacks=[checkpoint_callback]
     )
     
-    embedmodel = f"{utls.cache_dir()}/embedmodel"
+    embedmodel = f"{utls.cache_dir()}/embedmodel/Word2vec"
     
     if not os.path.exists(embedmodel):
         os.makedirs(embedmodel)
@@ -165,27 +165,55 @@ if __name__ == "__main__":
         # Load Word2Vec Model for Embedding
 
 
+# class Word2VecEmbedder: # review theis class : current; Word2VecEmbedder has no atribute M_word2vec
+#     def __init__(self, model_path):
+#         if os.path.exists(model_path):
+#             print("Loarding Word2vec model for embedding from cahe ...")
+#             self.M_word2vec = Word2Vec.load(model_path)
+#         else:   
+#             print("Check and finetune Word2vec Model for later use")
+#     # /home/rz.lekeufack/Rosmael/SvulDet/sourcescripts/storage/cache/embedmodel
+#     def embed(self, text):
+#         tokens_word = text.split()
+#         model_path = f"{utls.cache_dir()}/embedmodel/Word2vec/Word2vec/word2vec_model.bin"
+#         self.M_word2vec = Word2Vec.load(model_path)
+#         embedding = np.mean([self.M_word2vec.wv[word] for word in tokens_word if word in self.M_word2vec.wv], axis=0)
+#         if embedding is None:
+#             embedding = np.zeros(100)
+#         return embedding
+    
+
 class Word2VecEmbedder:
     def __init__(self, model_path):
         if os.path.exists(model_path):
-            print("Loarding Word2vec model for embedding from cahe ...")
+            print("Loading Word2Vec model for embedding from cache ...")
             self.M_word2vec = Word2Vec.load(model_path)
         else:   
-            print("Check and finetune Word2vec Model for later use")
-            
+            print("Check and fine-tune Word2Vec Model for later use")
+            self.M_word2vec = None  
     def embed(self, text):
+        # model_path = f"{utls.cache_dir()}/embedmodel/Word2vec/Word2vec/word2vec_model.bin"
+        # self.M_word2vec = Word2Vec.load(model_path)
+        if self.M_word2vec is None:
+            raise ValueError("Word2Vec model is not loaded. Please check the model path.")
         tokens_word = text.split()
-        embedding = np.mean([self.M_word2vec.wv[word] for word in tokens_word if word in self.M_word2vec.wv], axis=0)
-        if embedding is None:
+        
+        if not tokens_word:  
+            return np.zeros(100)  
+
+        embeddings = [self.M_word2vec.wv[word] for word in tokens_word if word in self.M_word2vec.wv]
+        
+        if not embeddings:  
+            return np.zeros(100)
+
+        embedding = np.mean(embeddings, axis=0)
+
+        if np.isnan(embedding).any():
             embedding = np.zeros(100)
+
         return embedding
 
-
-
-
 # loaded_model = Word2Vec.load(f"{embedmodel}/Word2vec/word2vec_model.bin")
-
-
 # text = """
 # # Load Word2Vec Model for Embedding
 # loaded_model = Word2Vec.load("word2vec_model.bin")
@@ -202,7 +230,7 @@ class Word2VecEmbedder:
 #     embedding = np.zeros(100)  # Default to zero vector if no words match
 # print("Generated embedding:", embedding)
 
-# mword2vec = f"{embedmodel}/Word2vec/word2vec_model.bin"
+# mword2vec = f"{utls.cache_dir()}/embedmodel/Word2vec/Word2vec/word2vec_model.bin"
 
 # M_word2vec = Word2VecEmbedder(mword2vec)
 

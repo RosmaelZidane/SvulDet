@@ -19,9 +19,9 @@ JOB_ARRAY_NUMBER = 0
 # Read Data
 df = dataset()
 # comment this part latter
-vul = df[df['vul'] == 1].sample(300, random_state= 0) # this was to check whether they are funnction with enough change so that we can keep certain processing defined by svuldet
-nonvul = df[df['vul'] == 0].sample(len(vul), random_state= 0)
-df = pd.concat([vul, nonvul])
+# vul = df[df['vul'] == 1].sample(300, random_state= 0) # this was to check whether they are funnction with enough change so that we can keep certain processing defined by svuldet
+# nonvul = df[df['vul'] == 0].sample(len(vul), random_state= 0)
+# df = pd.concat([vul, nonvul])
 
 
 

@@ -21,7 +21,7 @@ class datasetDatasetSBERT:
 
         if partition in ["train", "val"]:
             vul = self.df[self.df.vul == 1]
-            nonvul = self.df[self.df.vul == 0].sample(len(vul), random_state=0)
+            nonvul = self.df[self.df.vul == 0]#.sample(len(vul), random_state=0)
             self.df = pd.concat([vul, nonvul])
 
         self.texts = self.df.before.tolist()
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         accelerator="auto",
         devices="auto",
-        max_epochs=5, # 10
+        max_epochs=10, # 10
         callbacks=[checkpoint_callback]
     )
     
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         print("A pre-trained SentenceBert  exit; \nLoading model from pre-trained")
 
 
-class SBERTEmbedder:
+class SBERTEmbedder: # error with sbert together with shape (384, ) (2, )
     def __init__(self, model_path):
         if os.path.exists(model_path):
             print("Loading SentenceBERT for embedding from cache ...")
