@@ -147,7 +147,7 @@ def cache_all_items(df, lines, graph_type="pdg", feat="all"):
     }
 
     for name, embedder in embedders.items():
-        print(f"\n--- Processing with {name.upper()} ---")
+        print(f"\n---> Processing with {name.upper()} <---")
         for _id in tqdm(df.sample(len(df)).id.tolist()):
             try:
                 process_item(
@@ -229,10 +229,10 @@ if __name__ == "__main__":
                 cache_worde2vec_method_level(df[df.id == _id], word2vec, _id)
         except Exception as e:
             print(f"Error creating method-level embedding for {_id}: {e}")
+            
     # with line level
     cache_all_items(df, lines, graph_type, feat)
     
     # delete wrong graphs
-    
-    
     delete_incorrect_element(incorrect_list)
+    print("[Infos] Graphs construction: Done.")

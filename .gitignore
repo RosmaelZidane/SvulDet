@@ -10,6 +10,7 @@ __pycache__/
 /sourcescripts/storage/cache
 /sourcescripts/storage/output
 /sourcescripts/workspace
+/sourcescripts/logs
 sourcescripts/lightning_logs
 # C extensions
 *.so
