@@ -5,7 +5,7 @@ from pytorch_lightning import Trainer
 from dgl.dataloading import GraphDataLoader
 import sys 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from f1model2 import LitSvulDetGAT, GraphFunctionDataset  
+from GATmodel import LitSvulDetGAT, GraphFunctionDataset  
 import uutils.__utils__ as utls
 from processing.dataprocessing import dataset  
 

@@ -1,3 +1,4 @@
+
 import os
 import sys
 import torch
@@ -27,7 +28,7 @@ class GraphFunctionDataset(Dataset):
         self.graph_dir = graph_dir
         self.graph_ids = []
 
-        for graph_id in tqdm(self.df['id'].tolist(), desc=f"Checking graphs for {split}"):
+        for graph_id in tqdm(self.df['id'].tolist(), desc=f"---> Checking graphs for {split}"):
             graph_path = os.path.join(self.graph_dir, f"{graph_id}")
             if os.path.exists(graph_path):
                 self.graph_ids.append(graph_id)
@@ -95,7 +96,7 @@ class LearnableWeightedLoss(nn.Module):
         loss = self.alpha * node_loss + (1 - self.alpha) * func_loss
         return loss
 
-class LitMultiTaskGAT(LightningModule):
+class LitSvulDetGAT(LightningModule):
     def __init__(self, config):
         super().__init__()
         self.save_hyperparameters()
@@ -139,17 +140,70 @@ class LitMultiTaskGAT(LightningModule):
         func_preds = torch.tensor(self.test_func_preds)
         func_labels = torch.tensor(self.test_func_labels)
 
-        # Node-level
+        # # Node-level
+        # node_f1 = f1_score(node_labels, node_preds, zero_division=0)
+        # node_acc = accuracy_score(node_labels, node_preds)
+        # node_precision = precision_score(node_labels, node_preds)
+        # node_recall = recall_score(node_labels, node_preds)
+        # node_auroc = roc_auc_score(node_labels, node_preds)
+        # node_mcc = matthews_corrcoef(node_labels, node_preds)
+
+        # # Function-level
+        # func_f1 = f1_score(func_labels, func_preds, zero_division=0)
+        # func_acc = accuracy_score(func_labels, func_preds)
+        # func_precision = precision_score(func_labels, func_preds)
+        # func_recall = recall_score(func_labels, func_preds)
+        # func_auroc = roc_auc_score(func_labels, func_preds)
+        # func_mcc = matthews_corrcoef(func_labels, func_preds)
+        # Node-level (macro)
+        node_f1 = f1_score(node_labels, node_preds, average="macro", zero_division=0)
+        node_acc = accuracy_score(node_labels, node_preds)
+        node_precision = precision_score(node_labels, node_preds, average="macro", zero_division=0)
+        node_recall = recall_score(node_labels, node_preds, average="macro", zero_division=0)
+        node_auroc = roc_auc_score(node_labels, node_preds)  # Binary AUROC doesn't use average
+        node_mcc = matthews_corrcoef(node_labels, node_preds)
+        
+        # Function-level (macro)
+        func_f1 = f1_score(func_labels, func_preds, average="macro", zero_division=0)
+        func_acc = accuracy_score(func_labels, func_preds)
+        func_precision = precision_score(func_labels, func_preds, average="macro", zero_division=0)
+        func_recall = recall_score(func_labels, func_preds, average="macro", zero_division=0)
+        func_auroc = roc_auc_score(func_labels, func_preds)  # Binary AUROC
+        func_mcc = matthews_corrcoef(func_labels, func_preds)
+
+        # Log metrics
         self.log_dict({
-            'test_node_f1': f1_score(node_labels, node_preds, zero_division=0),
-            'test_node_acc': accuracy_score(node_labels, node_preds),
+            'test_node_f1': node_f1,
+            'test_node_acc': node_acc,
+            'test_node_precision': node_precision,
+            'test_node_recall': node_recall,
+            'test_node_auroc': node_auroc,
+            'test_node_mcc': node_mcc,
+            'test_func_f1': func_f1,
+            'test_func_acc': func_acc,
+            'test_func_precision': func_precision,
+            'test_func_recall': func_recall,
+            'test_func_auroc': func_auroc,
+            'test_func_mcc': func_mcc,
         }, prog_bar=True)
 
-        # Function-level
-        self.log_dict({
-            'test_func_f1': f1_score(func_labels, func_preds, zero_division=0),
-            'test_func_acc': accuracy_score(func_labels, func_preds),
-        }, prog_bar=True)
+        # Save metrics to CSV
+        metrics = {
+            'Node F1': node_f1,
+            'Node Accuracy': node_acc,
+            'Node Precision': node_precision,
+            'Node Recall': node_recall,
+            'Node AUROC': node_auroc,
+            'Node MCC': node_mcc,
+            'Function F1': func_f1,
+            'Function Accuracy': func_acc,
+            'Function Precision': func_precision,
+            'Function Recall': func_recall,
+            'Function AUROC': func_auroc,
+            'Function MCC': func_mcc
+        }
+        metrics_df = pd.DataFrame([metrics])
+        metrics_df.to_csv(f"{utls.outputs_dir()}/test_metrics.csv", mode='a', header=not os.path.exists(f"{utls.outputs_dir()}/test_metrics.csv"), index=False)
 
     def test_step(self, batch, batch_idx):
         node_logits, graph_logits = self(batch)
@@ -198,7 +252,7 @@ def train_with_param_trials(df, graph_dir, config_grid, max_epochs=5):
             'lr': lr
         }
 
-        model = LitMultiTaskGAT(trial_config)
+        model = LitSvulDetGAT(trial_config)
         checkpoint_path = f"{utls.cache_dir()}/checkpoints/trial_{idx+1}.ckpt"
 
         checkpoint_callback = ModelCheckpoint(
@@ -218,14 +272,14 @@ def train_with_param_trials(df, graph_dir, config_grid, max_epochs=5):
 
         trainer.fit(model, train_loader, val_loader)
 
-        if model.val_f1_history:
-            plt.plot(*zip(*model.val_f1_history), label=f'Trial {idx+1}')
-            plt.xlabel("Epoch")
-            plt.ylabel("Validation F1")
-            plt.title("Validation F1 Score History")
-            plt.legend()
-            plt.savefig(f"{utls.cache_dir()}/trial_{idx+1}_f1_history.png")
-            plt.close()
+        # Plot and save F1 history for each trial
+        plt.plot(*zip(*model.val_f1_history), label=f'Trial {idx+1}')
+        plt.xlabel("Epoch")
+        plt.ylabel("Validation F1")
+        plt.title("Validation F1 Score History")
+        plt.legend()
+        plt.savefig(f"{utls.get_dir(f'{utls.outputs_dir()}/train_hystory')}/trial_{idx+1}_f1_history.png")
+        plt.close()
 
         val_f1 = model.val_f1_history[-1][1] if model.val_f1_history else 0
         if val_f1 > best_val_f1:
@@ -236,9 +290,11 @@ def train_with_param_trials(df, graph_dir, config_grid, max_epochs=5):
     print(f"\nBest model: {best_model_path} with val_f1 = {best_val_f1:.4f}")
     print(f"Best config: {best_config}")
 
-    best_model = LitMultiTaskGAT.load_from_checkpoint(best_model_path, config=best_config)
+    best_model = LitSvulDetGAT.load_from_checkpoint(best_model_path, config=best_config)
     trainer = Trainer(logger=False)
     trainer.test(best_model, test_loader)
+    best_configd = pd.DataFrame([best_config])
+    best_configd.to_csv(f"{utls.outputs_dir()}/best_confir.csv", index = False)
 
     return best_model, best_config
 
@@ -246,10 +302,12 @@ if __name__ == '__main__':
     df = dataset()
     graph_dir = f"{utls.cache_dir()}/Graph/dataset_svuldet_codebert_pdg+raw"
     config_grid = {
-        'in_feats': 768,
-        'hidden_feats': [128],
+        'in_feats': 768, # must e the same as the feature in graph 
         'num_heads': 4,
-        'dropout': [0.2],
-        'lr': [1e-4, 1e-3]
+        'hidden_feats': [64], # , 256
+        'dropout': [0.2, 0.3, 0.4],
+        'lr': [1e-5],
     }
-    train_with_param_trials(df, graph_dir, config_grid, max_epochs=5)
+    best_model, best_config = train_with_param_trials(df, graph_dir, config_grid, max_epochs=100)
+    
+    #  {'in_feats': 768, 'hidden_feats': 64, 'num_heads': 4, 'dropout': 0.4, 'lr': 1e-05}

@@ -1,3 +1,4 @@
+
 import os
 import sys
 import torch
@@ -22,12 +23,12 @@ class GraphFunctionDataset(Dataset):
     def __init__(self, df, graph_dir, split='train', verbose=True):
         self.df = df[df['label'] == split]
         vuldf = self.df[self.df.vul == 1]
-        nonvuldf = self.df[self.df.vul == 0]#.sample(len(vuldf), random_state=0)
+        nonvuldf = self.df[self.df.vul == 0].sample(len(vuldf), random_state=0)
         self.df = pd.concat([vuldf, nonvuldf])
         self.graph_dir = graph_dir
         self.graph_ids = []
 
-        for graph_id in tqdm(self.df['id'].tolist(), desc=f"Checking graphs for {split}"):
+        for graph_id in tqdm(self.df['id'].tolist(), desc=f"---> Checking graphs for {split}"):
             graph_path = os.path.join(self.graph_dir, f"{graph_id}")
             if os.path.exists(graph_path):
                 self.graph_ids.append(graph_id)
@@ -95,7 +96,7 @@ class LearnableWeightedLoss(nn.Module):
         loss = self.alpha * node_loss + (1 - self.alpha) * func_loss
         return loss
 
-class LitMultiTaskGAT(LightningModule):
+class LitSvulDetGAT(LightningModule):
     def __init__(self, config):
         super().__init__()
         self.save_hyperparameters()
@@ -251,7 +252,7 @@ def train_with_param_trials(df, graph_dir, config_grid, max_epochs=5):
             'lr': lr
         }
 
-        model = LitMultiTaskGAT(trial_config)
+        model = LitSvulDetGAT(trial_config)
         checkpoint_path = f"{utls.cache_dir()}/checkpoints/trial_{idx+1}.ckpt"
 
         checkpoint_callback = ModelCheckpoint(
@@ -289,7 +290,7 @@ def train_with_param_trials(df, graph_dir, config_grid, max_epochs=5):
     print(f"\nBest model: {best_model_path} with val_f1 = {best_val_f1:.4f}")
     print(f"Best config: {best_config}")
 
-    best_model = LitMultiTaskGAT.load_from_checkpoint(best_model_path, config=best_config)
+    best_model = LitSvulDetGAT.load_from_checkpoint(best_model_path, config=best_config)
     trainer = Trainer(logger=False)
     trainer.test(best_model, test_loader)
     best_configd = pd.DataFrame([best_config])
@@ -301,10 +302,12 @@ if __name__ == '__main__':
     df = dataset()
     graph_dir = f"{utls.cache_dir()}/Graph/dataset_svuldet_codebert_pdg+raw"
     config_grid = {
-        'in_feats': 768,
+        'in_feats': 768, # must e the same as the feature in graph 
         'num_heads': 4,
-        'hidden_feats': [256],
-        'dropout': [0.3],
+        'hidden_feats': [64], # , 256
+        'dropout': [0.4],
         'lr': [1e-5],
     }
-    best_model, best_config = train_with_param_trials(df, graph_dir, config_grid, max_epochs=100)
+    best_model, best_config = train_with_param_trials(df, graph_dir, config_grid, max_epochs=10)
+    
+    #  {'in_feats': 768, 'hidden_feats': 64, 'num_heads': 4, 'dropout': 0.4, 'lr': 1e-05}

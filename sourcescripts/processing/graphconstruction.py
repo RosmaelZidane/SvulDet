@@ -65,7 +65,7 @@ def process_item(_id, df, codebert=None, word2vec=None, sbert=None, lines=None, 
         return g
     
     code, lineno, ei, eo, et = feature_extraction(
-        f"{utls.processed_dir()}/dataset/before/{_id}.java", graph_type)
+        f"{utls.processed_dir()}/dataset/before/{_id}.c", graph_type)
     vuln = [1 if i in lines[_id] else 0 for i in lineno] if _id in lines else [0 for _ in lineno]
     
     g = dgl.graph((eo, ei))

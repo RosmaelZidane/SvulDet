@@ -56,7 +56,7 @@ df = dataset()
 # text = df['before'][0]
 
 
-# path = '/home/rz.lekeufack/Rosmael/SvulDet/sourcescripts/storage/processed/dataset/before/1.java'
+# path = '/home/rz.lekeufack/Rosmael/SvulDet/sourcescripts/storage/processed/dataset/before/1.c'
 
 # with open(path, 'r') as f:
 #     code = f.read()
@@ -116,7 +116,7 @@ ids = []
 def check_validity(_id):
     """Check whether sample with id=_id has enough node/edges."""
     try:
-        with open(f"{utls.processed_dir()}/dataset/before/{_id}.java.nodes.json", "r") as f:
+        with open(f"{utls.processed_dir()}/dataset/before/{_id}.c.nodes.json", "r") as f:
             nodes = json.load(f)
             lineNums = set()
             for n in nodes:
@@ -127,7 +127,7 @@ def check_validity(_id):
             if len(lineNums) <= 1:
                 return False
 
-        with open(f"{utls.processed_dir()}/dataset/before/{_id}.java.edges.json", "r") as f:
+        with open(f"{utls.processed_dir()}/dataset/before/{_id}.c.edges.json", "r") as f:
             edges = json.load(f)
             edge_set = set([i[2] for i in edges])
             if "REACHING_DEF" not in edge_set and "CDG" not in edge_set:

@@ -12,6 +12,11 @@ __pycache__/
 /sourcescripts/workspace
 /sourcescripts/logs
 sourcescripts/lightning_logs
+/sourcescripts/storage/external/data_FFmpeg+qemu.csv
+/sourcescripts/storage/external/data.zip
+/sourcescripts/storage/external/joern-cli.zip
+sourcescripts/generated_graphs
+sourcescripts/storage/outputs
 # C extensions
 *.so
 

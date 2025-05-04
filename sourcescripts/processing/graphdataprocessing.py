@@ -103,7 +103,7 @@ def run_joern(filepath: str, verbose: int):
 def get_node_edges(filepath: str, verbose=0):
     """Get node and edges given filepath (must run after run_joern).
 
-    filepath = "./storage/processed/dataset/before/53.java"
+    filepath = "./storage/processed/dataset/before/53.c"
     """
     outdir = Path(filepath).parent
     outfile = outdir / Path(filepath).name
@@ -230,7 +230,7 @@ def full_run_joern(filepath: str, verbose=0):
 def full_run_joern_from_string(code: str, dataset: str, iid: str, verbose=0):
     """Run full joern from a string instead of file."""
     savedir = utls.get_dir(utls.interim_dir() / dataset)
-    savepath = savedir / f"{iid}.java"
+    savepath = savedir / f"{iid}.c"
     with open(savepath, "w") as f:
         f.write(code)
     return full_run_joern(savepath, verbose)
