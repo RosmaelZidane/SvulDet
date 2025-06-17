@@ -6,6 +6,27 @@
 Modeling Function-Level Relationships for Vulnerability Detection: a GNN-based approach
 
 
+```bash
+cd sourcescript
+
+python3 -B ./processing/process.py
+
+python3 -B ./processing/graphdata.py
+```
+
+
+```bash
+
+python3 -B ./embeddmodel/codebert.py
+
+python3 -B ./embeddmodel/word2vec.py
+
+python3 -B ./embeddmodel/sentencebert.py
+```
+
+
+
+
 1 ready:
 process and graph data extraction process. Both under sourcescripts/process
 
