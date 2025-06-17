@@ -18,7 +18,7 @@ python3 -B ./processing/graphdata.py
 ```bash
 python3 -B ./model/GATmain.py
 ```
-
+```bash
 python3 -B ./embeddmodel/codebert.py
 
 python3 -B ./embeddmodel/word2vec.py
