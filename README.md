@@ -16,12 +16,18 @@ python3 -B ./processing/graphdata.py
 
 
 ```bash
+python3 -B ./model/GATmain.py
+```
 
 python3 -B ./embeddmodel/codebert.py
 
 python3 -B ./embeddmodel/word2vec.py
 
 python3 -B ./embeddmodel/sentencebert.py
+```
+
+```bash
+python3 -B ./processing/graphscontruction.py
 ```
 
 
